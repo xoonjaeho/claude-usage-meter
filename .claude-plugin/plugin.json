@@ -1,0 +1,1 @@
+{ "name": "usage-meter", "version": "0.1.0", "description": "Engine-measured context and quota line for the model each turn, plus threshold toasts", "types": "./types/index.d.ts" }
