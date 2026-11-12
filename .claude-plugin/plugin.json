@@ -1,1 +1,27 @@
-{ "name": "usage-meter", "version": "0.1.0", "description": "Engine-measured context and quota line for the model each turn, plus threshold toasts", "types": "./types/index.d.ts" }
+{
+  "name": "usage-meter",
+  "version": "0.3.0",
+  "description": "Engine-measured context and quota line for the model each turn, plus configurable threshold toasts",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "toasts": {
+      "type": "string",
+      "title": "Threshold toasts",
+      "description": "Show a toast when context or quota crosses a band. The model-facing line is always sent.",
+      "options": ["on", "off"],
+      "default": "on"
+    },
+    "context_toasts": {
+      "type": "string",
+      "title": "Context toasts",
+      "description": "Items separated by ||, each '<band %>: <message>'. Bands 1-100, ascending. Placeholders: {pct} {band}.",
+      "default": "50: ⚠ Context {pct}% — consider /compact after this task || 75: ⚠ Context {pct}% — /compact or start a new session soon || 90: ⚠ Context {pct}% — near the limit, /compact now"
+    },
+    "quota_toasts": {
+      "type": "string",
+      "title": "Quota toasts",
+      "description": "Items separated by ||, each '<band %>: <message>', applied to every rate-limit window. Bands 1-100, ascending. Placeholders: {pct} {band} {window} {reset}.",
+      "default": "80: ⚠ Claude {window} usage {pct}% — pace your usage (reset: {reset}) || 95: ⚠ Claude {window} usage {pct}% — nearly used up (reset: {reset})"
+    }
+  }
+}
