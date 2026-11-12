@@ -1,4 +1,4 @@
-# usage-meter
+# claude-usage-meter
 
 A Claude Code mod that attaches one model-only line to every prompt with the engine's own context and quota figures, and toasts the person when a threshold is crossed.
 
@@ -11,6 +11,8 @@ ctx 8.9% (89,441 / 1,000,000) | 5h 14% (reset: 2h 10m) wk 22% (reset: 3d 4h)
 - Toasts: context 25/50/75%, each quota window 70/90%, on each upward band crossing; a figure that drops below a band and crosses it again toasts again.
 
 ## Install
+
+The plugin name in `.claude-plugin/plugin.json` stays `usage-meter`: `claude plugin validate` reserves names starting with `claude-`. The Codex counterpart is `codex-usage-meter`.
 
 List the folder in `env.CLAUDE_CODE_PLUGIN_DIRS` in `~/.claude/settings.json` (`;`-separated absolute paths on Windows). It loads in every new session.
 

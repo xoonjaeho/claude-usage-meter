@@ -4,13 +4,13 @@ import type { Register, SessionContextUsage, SessionRateLimit } from 'claude-cod
 import type { Crossed } from '../types'
 
 const CONTEXT_BANDS: [number, string][] = [
-  [75, '정리 지점에서 멈추고 /handoff'],
-  [50, '현재 작업 후 /compact 권장'],
-  [25, '보호 구간: 읽기는 위임, 출력 상한 축소'],
+  [75, 'stop at a clean point, then /handoff'],
+  [50, '/compact after the current task'],
+  [25, 'protect: delegate reads, tighten output caps'],
 ]
 const LIMIT_BANDS: [number, string][] = [
-  [90, '오케스트레이터 전용 (실행은 위임)'],
-  [70, '다른 풀 엔진 우선'],
+  [90, 'orchestrator only, delegate execution'],
+  [70, 'prefer engines on another pool'],
 ]
 const LABELS: Record<string, string> = { five_hour: '5h', seven_day: 'wk' }
 
@@ -63,7 +63,7 @@ export const register: Register = on => {
 
     if (e.changed.includes('context') && e.context.percent !== undefined) {
       const [at, advice] = band(e.context.percent, CONTEXT_BANDS)
-      if (at > seen.context) toasts.push(`⚠ ctx ${e.context.percent}% 넘음 — ${advice}`)
+      if (at > seen.context) toasts.push(`⚠ ctx ${e.context.percent}% crossed — ${advice}`)
       now.context = at
     }
     if (e.changed.includes('rateLimits')) {

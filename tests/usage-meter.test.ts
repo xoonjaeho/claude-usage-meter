@@ -73,7 +73,7 @@ test('a band crossing toasts once, not on every measurement', async ($, on) => {
   })
 
   expect(toasts).toEqual([
-    '⚠ ctx 51% 넘음 — 현재 작업 후 /compact 권장',
-    '⚠ Claude 5h 71% — 다른 풀 엔진 우선',
+    '⚠ ctx 51% crossed — /compact after the current task',
+    '⚠ Claude 5h 71% — prefer engines on another pool',
   ])
 })
