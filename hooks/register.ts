@@ -15,6 +15,19 @@ const DEFAULT_QUOTA_BANDS: Band[] = [
   { at: 80, template: '⚠ Claude {window} usage {pct}% — pace your usage (reset: {reset})' },
   { at: 95, template: '⚠ Claude {window} usage {pct}% — nearly used up (reset: {reset})' },
 ]
+// Model-facing advice for the context band the line reads. Cumulative: at 60% the 25% advice
+// still holds. Only the user can run /compact or /clear, so the advice ends in telling them.
+const ADVICE: [number, string][] = [
+  [25, 'delegate large reads to subagents and cap tool output instead of reading whole files.'],
+  [
+    50,
+    'once, at the end of the current step, tell the user /compact is advisable and give a ready-to-paste `/compact <focus>` line: the next task, what must survive, what may be dropped. Keep working.',
+  ],
+  [
+    75,
+    'stop at a clean boundary and tell the user once to run `/handoff`, which picks /clear or /compact; without that skill, give the `/compact <focus>` line.',
+  ],
+]
 const ITEM_SEPARATOR = '||'
 const LABELS: Record<string, string> = { five_hour: '5h', seven_day: 'wk' }
 
@@ -91,6 +104,17 @@ export const line = (context: SessionContextUsage, limits: SessionRateLimit[], n
   return quota ? `${ctx} | ${quota}` : ctx
 }
 
+// Undefined below the first band and when the figure is unknown: a guess is not a reading.
+export const advice = (context: SessionContextUsage) => {
+  if (context.tokens === undefined || !context.window) return undefined
+  const percent = (context.tokens / context.window) * 100
+  const held = ADVICE.filter(([at]) => percent >= at)
+  if (!held.length) return undefined
+  return ['Context budget (from the ctx line above; you cannot run /compact or /clear yourself):']
+    .concat(held.map(([at, text]) => `- ≥${at}%: ${text}`))
+    .join('\n')
+}
+
 export const register: Register = (on, options) => {
   on('prompt.submit', async ($, e, next) => {
     // A failed read still yields `ctx unknown`, which the rules act on; a clock failure
@@ -98,8 +122,9 @@ export const register: Register = (on, options) => {
     const usage = await $.session.usage().catch(() => undefined)
     const now = await $.clock.now().catch(() => NaN)
     const text = usage ? line(usage.context, usage.rateLimits, now) : 'ctx unknown (usage error)'
+    const budget = usage ? advice(usage.context) : undefined
 
-    return next({ ...e, context: [...(e.context ?? []), text] })
+    return next({ ...e, context: [...(e.context ?? []), text, ...(budget ? [budget] : [])] })
   })
 
   const show = options.toasts !== 'off'

@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { line, until } from '../hooks/register'
+import { advice, line, until } from '../hooks/register'
 
 const NOW = Date.parse('2026-11-10T12:00:00Z')
 const CONTEXT = { tokens: 72_140, window: 1_000_000, percent: 7 }
@@ -36,6 +36,36 @@ test('a submitted prompt carries the line as model-only context', async ($, on) 
   const entered = await $.prompt.submit({ text: 'hi', wait: false, origin: { kind: 'composer' } })
 
   expect(entered.context).toEqual([LINE])
+})
+
+const at = (percent: number) => ({ tokens: percent * 10_000, window: 1_000_000, percent })
+const bands = (text: string | undefined) => (text ?? '').split('\n').slice(1).map(row => row.slice(0, 6))
+
+test('advice holds every band the figure has reached, and none below the first or when unknown', () => {
+  expect(advice(at(24.9))).toBeUndefined()
+  expect(advice({ window: 1_000_000 })).toBeUndefined()
+  expect(advice({ tokens: 10, window: 0 })).toBeUndefined()
+  expect(bands(advice(at(25)))).toEqual(['- ≥25%'])
+  expect(bands(advice(at(60)))).toEqual(['- ≥25%', '- ≥50%'])
+  expect(bands(advice(at(75)))).toEqual(['- ≥25%', '- ≥50%', '- ≥75%'])
+})
+
+test('the 50% band asks for a /compact line and the 75% band for /handoff, both left to the user', () => {
+  const text = advice(at(80))!
+  expect(text).toMatch(/cannot run \/compact or \/clear yourself/)
+  expect(text.split('\n')[2]).toMatch(/`\/compact <focus>`/)
+  expect(text.split('\n')[3]).toMatch(/`\/handoff`/)
+})
+
+test('a prompt past a band carries the advice after the line', async ($, on) => {
+  const context = at(55.5)
+  on('session.usage', () => ({ value: { startedAt: 0, context, rateLimits: [] } }))
+  on('clock.now', () => ({ value: NOW }))
+  on('prompt.submit', (_$, e) => ({ text: e.text, context: e.context }))
+
+  const entered = await $.prompt.submit({ text: 'hi', wait: false, origin: { kind: 'composer' } })
+
+  expect(entered.context).toEqual(['ctx 55.5% (555,000 / 1,000,000)', advice(context)])
 })
 
 test('a failed usage read still carries a line the rules act on', async ($, on) => {
