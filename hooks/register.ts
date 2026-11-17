@@ -21,11 +21,11 @@ const ADVICE: [number, string][] = [
   [25, 'delegate large reads to subagents and cap tool output instead of reading whole files.'],
   [
     50,
-    'once, at the end of the current step, tell the user /compact is advisable and give a ready-to-paste `/compact <focus>` line: the next task, what must survive, what may be dropped. Keep working.',
+    'at the end of the current step, tell the user /compact is advisable and give a ready-to-paste `/compact <focus>` line: the next task, what must survive, what may be dropped. Skip this if you already said it in this conversation.',
   ],
   [
     75,
-    'stop at a clean boundary and tell the user once to run `/handoff`, which picks /clear or /compact; without that skill, give the `/compact <focus>` line.',
+    'this replaces the ≥50% advice: stop at a clean boundary and tell the user to run `/handoff`, which picks /clear or /compact; without that skill, give the `/compact <focus>` line. Skip the telling if you already did it in this conversation.',
   ],
 ]
 const ITEM_SEPARATOR = '||'

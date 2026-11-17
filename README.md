@@ -10,8 +10,8 @@ ctx 8.9% (89,441 / 1,000,000) | 5h 14% (reset: 2h 10m) wk 22% (reset: 3d 4h)
 - Quota is the Claude rate-limit windows from the last API response. `(reset: …)` is the time left in each window at the top of the turn; `(reset: passed)` means the window has reset since that response, so its percent is stale. A window without `resetsAt`, or a failed clock read, has no suffix.
 - Context budget: from 25% context, a second model-only item follows the line with the advice for every band reached (cumulative):
   - ≥25%: delegate large reads to subagents and cap tool output.
-  - ≥50%: once, at the end of the current step, tell the user `/compact` is advisable with a ready-to-paste `/compact <focus>` line.
-  - ≥75%: stop at a clean boundary and tell the user once to run `/handoff` (the [handoff skill](https://github.com/xoonjaeho/claude-skill-handoff)), or give the `/compact <focus>` line without it.
+  - ≥50%: at the end of the current step, tell the user `/compact` is advisable with a ready-to-paste `/compact <focus>` line, once per conversation.
+  - ≥75% (replaces the 50% advice): stop at a clean boundary and tell the user once to run `/handoff` (the [handoff skill](https://github.com/xoonjaeho/claude-skill-handoff)), or give the `/compact <focus>` line without it.
 
   Claude cannot run `/compact` or `/clear` itself; the advice only makes it say so. Nothing is added while the figure is unknown.
 - Toasts: on each upward band crossing of context (default 50/75/90%) and of each quota window (default 80/95%); a figure that drops below a band and crosses it again toasts again. Bands and messages are configurable, see Configure.
